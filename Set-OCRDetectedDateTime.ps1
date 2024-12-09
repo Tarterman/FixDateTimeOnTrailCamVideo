@@ -36,6 +36,28 @@ function Set-OCRDetectedDateTime {
     )
     
     begin {
+        function Get-DSTInfo {
+            param(
+                [int]$Year = (Get-Date).Year
+            )
+    
+            $beginDate = [datetime]"March 1, $Year"
+            while ($beginDate.DayOfWeek -ne 'Sunday') {
+                $beginDate = $beginDate.AddDays(1)
+            }
+    
+            $endDate = [datetime]"November 1, $Year"
+            while ($endDate.DayOfWeek -ne 'Sunday') {
+                $endDate = $endDate.AddDays(1)
+            }
+    
+            [PSCustomObject]@{
+                Year = $Year
+                BeginDate = $($beginDate.AddDays(7).AddHours(2))
+                EndDate = $($endDate.AddHours(2))
+            }
+        }        
+        
         $firstFramePath = "$($env:TEMP)\firstframe.jpg"
         $croppedImagePath = "$($env:TEMP)\croppedimage.jpg"
         $hiddenConsoleOutput = "$($env:TEMP)\hiddenConsoleOutput.txt"
@@ -112,27 +134,5 @@ function Set-OCRDetectedDateTime {
     
     end {
         
-    }
-}
-
-function Get-DSTInfo {
-    param(
-        [int]$Year = (Get-Date).Year
-    )
-
-    $beginDate = [datetime]"March 1, $Year"
-    while ($beginDate.DayOfWeek -ne 'Sunday') {
-        $beginDate = $beginDate.AddDays(1)
-    }
-
-    $endDate = [datetime]"November 1, $Year"
-    while ($endDate.DayOfWeek -ne 'Sunday') {
-        $endDate = $endDate.AddDays(1)
-    }
-
-    [PSCustomObject]@{
-        Year = $Year
-        BeginDate = $($beginDate.AddDays(7).AddHours(2))
-        EndDate = $($endDate.AddHours(2))
     }
 }
