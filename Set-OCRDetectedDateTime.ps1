@@ -1,5 +1,26 @@
 using namespace System.Drawing
 function Set-OCRDetectedDateTime {
+    <#
+    .SYNOPSIS
+        Uses OCR to read the timestamp on trail cam video and set the CreationDate and LastWriteTime to that value
+    .DESCRIPTION
+        When copying videos off of some (maybe all trail cameras) to a phone, it sets the CreationDate and LastWriteTime of
+        the video to the date/time they were copied. The videos have a timestamp at the bottom of the video. This script
+        uses ffmpeg to grab the first frame of video and save it. It then crops the image to just get the bar at the bottom
+        with the timestamp.
+
+        It then uses Tesseract OCR to read the date/time off of the cropped image and sets the CreationDate and LastWriteTime
+        to the value detected.
+    .NOTES
+        This script has been tested on Wosoda G300 and Vikeri A1 trail cameras.
+
+        This script requires .NET 4 and is not supported in Linux.
+    .EXAMPLE
+        Set-OCRDetectedDateTime -CamerasPlacedDate "2024/10/23" -CamerasCheckedDate "2024/12/01" -VideoFolder "C:\Videos" -ffmpegExe "C:\ffmpeg\bin\ffmpeg.exe"
+
+        Uses Tesseract OCR (using the default installed path) to analyze video files in C:\Videos and set the detected date/time on the file
+    #>
+
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -21,8 +42,10 @@ function Set-OCRDetectedDateTime {
     }
     
     process {
-        Get-ChildItem -Path $VideoFolder | Where-Object {$_.extension -in ".mp4",".avi",".mkv"} | ForEach-Object {
-            $file = $_
+        $currentFile = 1
+        $files = Get-ChildItem -Path $VideoFolder | Where-Object {$_.extension -in ".mp4",".avi",".mkv"}
+        foreach ($file in $files) {
+            Write-Progress -Activity "Analyzing video $($currentFile) of $($files.Count)." -PercentComplete (($currentFile / $files.Count) * 100)
             if (Test-Path $firstFramePath) {
                 Remove-Item $firstFramePath
             }
@@ -81,7 +104,9 @@ function Set-OCRDetectedDateTime {
             $croppedImage.Dispose()
             $image.Dispose()
             Remove-Item $firstFramePath, $croppedImagePath
+            $currentFile++
         }
+        Write-Progress -Activity "Analyzing video $($currentFile) of $($files.Count)." -Completed
         Remove-Item -Path $hiddenConsoleOutput
     }
     
