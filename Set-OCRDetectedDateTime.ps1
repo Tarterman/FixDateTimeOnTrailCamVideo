@@ -69,7 +69,7 @@ function Set-OCRDetectedDateTime {
             # Set created time and last modified time to timestamp on image
             $ocr | ForEach-Object {
                 $item = $_
-                if ($item -match '\d{4}/\d{2}/\d{2}') {
+                if ($item -match '\d{4}/\d{2}/\d{2}' -or $item -match '\d{2}/\d{2}/\d{4}' -or $item -match '\d{2}-\d{2}-\d{4}' -or $item -match '\d{2}-\d{2}-\d{4}') {
                     $date = $item
                 } elseif ($item -match '\d{2}:\d{2}:\d{2}') {
                     $time = $item
