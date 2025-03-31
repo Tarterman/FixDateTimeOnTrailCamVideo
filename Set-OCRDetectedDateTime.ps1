@@ -41,7 +41,7 @@ function Set-OCRDetectedDateTime {
                 [int]$Year = (Get-Date).Year
             )
     
-            $beginDate = [datetime]"March 1, $Year"
+            $beginDate = [datetime]"March 8, $Year"
             while ($beginDate.DayOfWeek -ne 'Sunday') {
                 $beginDate = $beginDate.AddDays(1)
             }
